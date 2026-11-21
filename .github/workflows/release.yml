@@ -1,0 +1,61 @@
+name: Release
+
+# Push a tag vX.Y.Z whose version matches viewfinder.version in gradle.properties and has a CHANGELOG.md section.
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag against the version
+        id: version
+        run: |
+          version="$(grep '^viewfinder.version=' gradle.properties | cut -d= -f2)"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match viewfinder.version=${version} in gradle.properties."
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Release notes from CHANGELOG.md
+        run: tools/release-notes.sh "${{ steps.version.outputs.version }}" > "$RUNNER_TEMP/notes.md"
+
+      - uses: ./.github/actions/gradle
+
+      - name: Signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.VIEWFINDER_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Secret VIEWFINDER_KEYSTORE_BASE64 is missing. See README > Releasing."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+
+      - name: Build the release APK
+        env:
+          VIEWFINDER_KEYSTORE: ${{ runner.temp }}/release.jks
+          VIEWFINDER_KEYSTORE_PASSWORD: ${{ secrets.VIEWFINDER_KEYSTORE_PASSWORD }}
+          VIEWFINDER_KEY_ALIAS: ${{ secrets.VIEWFINDER_KEY_ALIAS }}
+          VIEWFINDER_KEY_PASSWORD: ${{ secrets.VIEWFINDER_KEY_PASSWORD }}
+        run: |
+          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :app:assembleRelease
+          apk="$RUNNER_TEMP/viewfinder-${{ steps.version.outputs.version }}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$apk"
+          "$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 | sort -V | tail -1)/apksigner" verify --print-certs "$apk"
+          echo "APK=$apk" >> "$GITHUB_ENV"
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "$APK" --title "Viewfinder ${{ steps.version.outputs.version }}" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag

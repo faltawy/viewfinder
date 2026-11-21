@@ -31,6 +31,8 @@ The Gradle JDK is pinned in `gradle.properties` (Android Studio's JBR).
 ./gradlew :ptp:runFakeCamera -Pkbps=150   # the same, with transfers slowed to test progress and cancelling
 ```
 
+Releases: bump `viewfinder.version` in `gradle.properties` and add its `CHANGELOG.md` section, then push a `vX.Y.Z` tag; `.github/workflows/release.yml` does the rest (README > Releasing). CI passes `-Dorg.gradle.java.home="$JAVA_HOME"` because the pinned JDK path is macOS-only.
+
 To regenerate the Nikon catalog:
 
 ```bash

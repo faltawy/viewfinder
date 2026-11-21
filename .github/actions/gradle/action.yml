@@ -1,0 +1,10 @@
+name: Set up Gradle
+description: JDK 21 and a cached Gradle. Run Gradle as ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" …, which overrides the macOS JDK path in gradle.properties.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 21
+    - uses: gradle/actions/setup-gradle@v4
