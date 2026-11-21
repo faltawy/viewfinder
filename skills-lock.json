@@ -1,0 +1,54 @@
+{
+  "version": 2,
+  "skills": {
+    "compose-animations": {
+      "source": "chrisbanes/skills",
+      "commit": "5f0a6226806799ecb93c87dd3c8c09acd00bfc1d",
+      "sourceType": "github",
+      "skillPath": "skills/compose-animations/SKILL.md",
+      "computedHash": "68acb77046efe5c8f1006e0466963a694b026ba16086a0ef54f87266b9f81f30"
+    },
+    "compose-component-design": {
+      "source": "chrisbanes/skills",
+      "commit": "5f0a6226806799ecb93c87dd3c8c09acd00bfc1d",
+      "sourceType": "github",
+      "skillPath": "skills/compose-component-design/SKILL.md",
+      "computedHash": "812df175fed3ccff53d117c8417486779f8aed317e9d633cfc41a8a401f2ddf1"
+    },
+    "compose-state-and-effects": {
+      "source": "chrisbanes/skills",
+      "commit": "5f0a6226806799ecb93c87dd3c8c09acd00bfc1d",
+      "sourceType": "github",
+      "skillPath": "skills/compose-state-and-effects/SKILL.md",
+      "computedHash": "bb1a176cd64f7e159555766ce30143e578bdb2b86f6fbba11b71efcb2222ef82"
+    },
+    "compose-ui-testing-patterns": {
+      "source": "chrisbanes/skills",
+      "commit": "5f0a6226806799ecb93c87dd3c8c09acd00bfc1d",
+      "sourceType": "github",
+      "skillPath": "skills/compose-ui-testing-patterns/SKILL.md",
+      "computedHash": "27b86020a45a80bdb426609f82df55793e224fe992e527b2083cf19fa0374569"
+    },
+    "edge-to-edge": {
+      "source": "android/skills",
+      "commit": "c72942584fff970dac86ced78b367fce0c441e52",
+      "sourceType": "github",
+      "skillPath": "system/edge-to-edge/SKILL.md",
+      "computedHash": "954c391ab845f97ce160c04c3944d6c6da3c7ad0385970353b314ee2a3aabea2"
+    },
+    "jetpack-compose-performance": {
+      "source": "android/skills",
+      "commit": "c72942584fff970dac86ced78b367fce0c441e52",
+      "sourceType": "github",
+      "skillPath": "jetpack-compose/jetpack-compose-performance/SKILL.md",
+      "computedHash": "a66ab42a03f6b559bfd1c8325e242ff65d276c173a7ef8e889837c311d179d49"
+    },
+    "kotlin-concurrency-and-flow": {
+      "source": "chrisbanes/skills",
+      "commit": "5f0a6226806799ecb93c87dd3c8c09acd00bfc1d",
+      "sourceType": "github",
+      "skillPath": "skills/kotlin-concurrency-and-flow/SKILL.md",
+      "computedHash": "fc593d0bcfb35d873f5db70ca83870d17c3a8e6a7e6a417083470eb3a10973f8"
+    }
+  }
+}
