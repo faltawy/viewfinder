@@ -51,16 +51,6 @@ You need the Android SDK and JDK 17 or newer.
 
 The emulator reaches it at `10.0.2.2`. Add `-Pkbps=150` to slow transfers down when testing progress and cancelling.
 
-## Project layout
-
-| Path | What's there |
-|------|--------------|
-| `ptp/` | Kotlin/JVM library, no Android: PTP and PTP/IP, the `Camera` interface, the generic and Nikon drivers. Tested against an in-process fake camera. |
-| `app/` | The Android app (Jetpack Compose, minSdk 33). |
-| `app/src/main/assets/learn/` | Learn photos and their credits. |
-| `tools/` | Generators for the Nikon property catalog, the Learn photo layers and the icon. |
-| `docs/` | Design docs and plans. |
-
 [AGENTS.md](AGENTS.md) covers the architecture, the quirks found on the real D5600, and the design and testing rules.
 
 ## Releasing
