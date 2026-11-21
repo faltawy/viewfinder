@@ -17,6 +17,7 @@ A personal Android replacement for Nikon SnapBridge. It talks to the camera over
 | `app/.../Share.kt`, `Sharer.kt` | Sharing. `Share.kt` holds the formats, options and the pure rules (which files go out, crop and caption maths, JPEG metadata stripping), unit-tested in `app/src/test`. `Sharer` does the Android side: re-encoding (JPEG, HEIF, WebP), photo cards, ZIP, contact-sheet PDF, location removal, FileProvider URIs and intents. |
 | `app/.../ui/` | The screens: Connect, Gallery, Viewer, Remote (live view and shooting), Settings (every camera property) and Log. `Theme.kt` and `Components.kt` hold the design system. |
 | `tools/gen_nikon_catalog.py` | Regenerates `NikonCatalog.kt` from libgphoto2's `ptp.h` and `config.c` (LGPL-2.1). |
+| `tools/launcher_icon_svg.py` | Renders the launcher icon drawables to `docs/images/icon.svg` for the README. Rerun after `gen_launcher_icon.py`. |
 
 ## Commands
 
