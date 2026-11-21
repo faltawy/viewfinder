@@ -3,7 +3,7 @@ description: JDK 21 and a cached Gradle. Run Gradle as ./gradlew -Dorg.gradle.ja
 runs:
   using: composite
   steps:
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         distribution: temurin
         java-version: 21
