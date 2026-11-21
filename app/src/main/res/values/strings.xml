@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Viewfinder</string>
+    <string name="tile_remote">Camera remote</string>
+    <string name="shortcut_remote">Remote</string>
+    <string name="shortcut_remote_long">Shoot with the camera</string>
+    <string name="shortcut_gallery">Photos</string>
+    <string name="shortcut_gallery_long">Photos on the camera</string>
+    <string name="shortcut_learn">Learn</string>
+    <string name="shortcut_learn_long">Learn photography</string>
+</resources>

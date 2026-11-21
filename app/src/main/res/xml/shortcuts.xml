@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="remote"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_remote"
+        android:shortcutShortLabel="@string/shortcut_remote"
+        android:shortcutLongLabel="@string/shortcut_remote_long">
+        <intent
+            android:action="app.viewfinder.action.REMOTE"
+            android:targetPackage="app.viewfinder"
+            android:targetClass="app.viewfinder.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="gallery"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_gallery"
+        android:shortcutShortLabel="@string/shortcut_gallery"
+        android:shortcutLongLabel="@string/shortcut_gallery_long">
+        <intent
+            android:action="app.viewfinder.action.GALLERY"
+            android:targetPackage="app.viewfinder"
+            android:targetClass="app.viewfinder.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="learn"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_learn"
+        android:shortcutShortLabel="@string/shortcut_learn"
+        android:shortcutLongLabel="@string/shortcut_learn_long">
+        <intent
+            android:action="app.viewfinder.action.LEARN"
+            android:targetPackage="app.viewfinder"
+            android:targetClass="app.viewfinder.MainActivity" />
+    </shortcut>
+</shortcuts>
