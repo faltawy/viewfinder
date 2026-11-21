@@ -55,32 +55,7 @@ The emulator reaches it at `10.0.2.2`. Add `-Pkbps=150` to slow transfers down w
 
 ## Releasing
 
-The version lives in one place: `viewfinder.version` in `gradle.properties`. The version code comes from it (1.2.3 → 10203).
-
-1. In [CHANGELOG.md](CHANGELOG.md), move the notes under `## [Unreleased]` into a new `## [X.Y.Z] - date` section.
-2. Set `viewfinder.version=X.Y.Z` and commit.
-3. Tag and push:
-   ```bash
-   git tag vX.Y.Z && git push origin vX.Y.Z
-   ```
-
-The release workflow runs the tests, checks the tag against the version, builds a signed APK and publishes a GitHub release with the CHANGELOG section as notes.
-
-<details>
-<summary>Signing</summary>
-
-The workflow needs four repository secrets:
-
-- `VIEWFINDER_KEYSTORE_BASE64`: the keystore, base64-encoded
-- `VIEWFINDER_KEYSTORE_PASSWORD`
-- `VIEWFINDER_KEY_ALIAS`
-- `VIEWFINDER_KEY_PASSWORD`
-
-Locally, `./gradlew :app:assembleRelease` with the same variables set (`VIEWFINDER_KEYSTORE` as a file path) builds a signed APK. Without them it builds an unsigned one.
-
-A release APK is signed with a different key from a debug install, so Android won't update one with the other. Uninstall first, which deletes the app's data.
-
-</details>
+Bump `viewfinder.version` in `gradle.properties`, add its section to [CHANGELOG.md](CHANGELOG.md), and push a `vX.Y.Z` tag. GitHub Actions builds the signed APK and publishes the release. Details and signing: [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Credits
 
