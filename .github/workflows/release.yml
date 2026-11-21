@@ -1,34 +1,37 @@
 name: Release
 
-# Push a tag vX.Y.Z whose version matches viewfinder.version in gradle.properties and has a CHANGELOG.md section.
+# release-please keeps a release PR open that bumps version.txt and CHANGELOG.md from the Conventional Commits
+# on dev. Merging it tags vX.Y.Z and creates the GitHub release; the apk job then attaches the signed APK.
 on:
   push:
-    tags: ['v*']
+    branches: [dev]
+
+permissions: {}
 
 jobs:
-  test:
-    uses: ./.github/workflows/ci.yml
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      created: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
 
-  release:
-    needs: test
+  apk:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v5
-
-      - name: Check the tag against the version
-        id: version
-        run: |
-          version="$(grep '^viewfinder.version=' gradle.properties | cut -d= -f2)"
-          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match viewfinder.version=${version} in gradle.properties."
-            exit 1
-          fi
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-
-      - name: Release notes from CHANGELOG.md
-        run: tools/release-notes.sh "${{ steps.version.outputs.version }}" > "$RUNNER_TEMP/notes.md"
+        with:
+          ref: ${{ needs.release-please.outputs.tag }}
 
       - uses: ./.github/actions/gradle
 
@@ -42,20 +45,20 @@ jobs:
           fi
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
 
-      - name: Build the release APK
+      - name: Test and build the release APK
         env:
           VIEWFINDER_KEYSTORE: ${{ runner.temp }}/release.jks
           VIEWFINDER_KEYSTORE_PASSWORD: ${{ secrets.VIEWFINDER_KEYSTORE_PASSWORD }}
           VIEWFINDER_KEY_ALIAS: ${{ secrets.VIEWFINDER_KEY_ALIAS }}
           VIEWFINDER_KEY_PASSWORD: ${{ secrets.VIEWFINDER_KEY_PASSWORD }}
         run: |
-          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :app:assembleRelease
-          apk="$RUNNER_TEMP/viewfinder-${{ steps.version.outputs.version }}.apk"
+          ./gradlew -Dorg.gradle.java.home="$JAVA_HOME" :ptp:test :app:testDebugUnitTest :app:assembleRelease
+          apk="$RUNNER_TEMP/viewfinder-${{ needs.release-please.outputs.version }}.apk"
           cp app/build/outputs/apk/release/app-release.apk "$apk"
           "$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 | sort -V | tail -1)/apksigner" verify --print-certs "$apk"
           echo "APK=$apk" >> "$GITHUB_ENV"
 
-      - name: GitHub release
+      - name: Attach the APK to the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" "$APK" --title "Viewfinder ${{ steps.version.outputs.version }}" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag
+        run: gh release upload "${{ needs.release-please.outputs.tag }}" "$APK" --clobber

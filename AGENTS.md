@@ -32,7 +32,7 @@ The Gradle JDK is pinned in `gradle.properties` (Android Studio's JBR).
 ./gradlew :ptp:runFakeCamera -Pkbps=150   # the same, with transfers slowed to test progress and cancelling
 ```
 
-Releases: bump `viewfinder.version` in `gradle.properties` and add its `CHANGELOG.md` section, then push a `vX.Y.Z` tag; `.github/workflows/release.yml` does the rest (see `docs/RELEASING.md`, which also covers the signing key). CI passes `-Dorg.gradle.java.home="$JAVA_HOME"` because the pinned JDK path is macOS-only.
+Releases are automatic: release-please turns Conventional Commits on `dev` into a release PR (version in `version.txt`, notes in `CHANGELOG.md`), and merging it publishes the signed APK. See `docs/RELEASING.md`, which also covers the signing key. CI passes `-Dorg.gradle.java.home="$JAVA_HOME"` because the pinned JDK path is macOS-only.
 
 To regenerate the Nikon catalog:
 
@@ -77,4 +77,4 @@ adb logcat -s Viewfinder:D AndroidRuntime:E
   - Each test must fail for the real reason before the fix.
   - Never assert only emptiness or "doesn't throw": pair it with a positive check on the same seeded fake data.
   - Hardcode the expected values.
-- **Commit only when asked.**
+- **Commit only when asked.** Messages follow Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `ci:`, `refactor:`, `test:`), because release-please builds the version and the CHANGELOG from them. Use `feat:`/`fix:` only for changes a user of the app would notice.

@@ -55,7 +55,7 @@ The emulator reaches it at `10.0.2.2`. Add `-Pkbps=150` to slow transfers down w
 
 ## Releasing
 
-Bump `viewfinder.version` in `gradle.properties`, add its section to [CHANGELOG.md](CHANGELOG.md), and push a `vX.Y.Z` tag. GitHub Actions builds the signed APK and publishes the release. Details and signing: [docs/RELEASING.md](docs/RELEASING.md).
+Automatic. Commit with `feat:` and `fix:` messages, and release-please keeps a release PR open with the next version and its CHANGELOG. Merging it publishes a GitHub release with the signed APK. Details and signing: [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Credits
 

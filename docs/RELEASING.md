@@ -1,25 +1,23 @@
 # Releasing
 
-## Cutting a release
+## How a release happens
 
-The version lives in one place: `viewfinder.version` in `gradle.properties`. The version code comes from it (1.2.3 → 10203), so every release must have a higher version than the last.
+Nothing to do by hand except merging a PR. [release-please](https://github.com/googleapis/release-please) reads the commit messages on `dev`:
 
-1. In [CHANGELOG.md](../CHANGELOG.md), move the notes under `## [Unreleased]` into a new `## [X.Y.Z] - YYYY-MM-DD` section.
-2. Set `viewfinder.version=X.Y.Z` and commit.
-3. Tag and push:
+| Commit | Next version | In the CHANGELOG |
+|--------|--------------|------------------|
+| `fix: …` | patch (0.1.0 → 0.1.1) | Fixed |
+| `feat: …` | minor (0.1.0 → 0.2.0) | Added |
+| `feat!: …` or a `BREAKING CHANGE:` footer | minor while below 1.0, then major | Added, marked breaking |
+| `docs:`, `chore:`, `ci:`, `refactor:`, `test:` | none | hidden |
 
-   ```bash
-   git tag vX.Y.Z && git push origin vX.Y.Z
-   ```
+Commits that don't follow [Conventional Commits](https://www.conventionalcommits.org/) are ignored.
 
-[`release.yml`](../.github/workflows/release.yml) then:
+1. After each push to `dev`, [`release.yml`](../.github/workflows/release.yml) opens or updates a PR titled `chore(dev): release X.Y.Z`. It bumps `version.txt` (the app's only version source; the version code comes from it, 1.2.3 → 10203) and adds the notes to [CHANGELOG.md](../CHANGELOG.md).
+2. Merge it when you want to ship. Edit the PR first to reword the notes.
+3. The merge tags `vX.Y.Z` and creates the GitHub release. The same workflow then runs the tests, builds the APK, signs it, checks the signature and attaches `viewfinder-X.Y.Z.apk`.
 
-1. runs the tests (the same job as CI),
-2. fails if the tag isn't `v` + `viewfinder.version`, or CHANGELOG.md has no section for it,
-3. builds the release APK, signs it and checks the signature,
-4. publishes a GitHub release named `Viewfinder X.Y.Z` with `viewfinder-X.Y.Z.apk` and the CHANGELOG section as notes.
-
-To fix a failed release, delete the tag (`git push --delete origin vX.Y.Z && git tag -d vX.Y.Z`), fix, and tag again.
+If the APK job fails, fix the cause and re-run that job from the Actions tab; it replaces the APK on the existing release.
 
 ## Signing
 

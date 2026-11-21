@@ -3,13 +3,13 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-/** The app's version lives in gradle.properties (`viewfinder.version`); the release workflow checks tags against it. */
-val appVersion: String = providers.gradleProperty("viewfinder.version").get()
+/** The app's version lives in version.txt, which release-please bumps in its release PR (docs/RELEASING.md). */
+val appVersion: String = providers.fileContents(rootProject.layout.projectDirectory.file("version.txt")).asText.get().trim()
 
 /** 1.2.3 → 10203: two digits per part, so every release orders above the one before it. */
 fun versionCodeOf(version: String): Int {
     val parts = version.split(".").map { it.toInt() }
-    require(parts.size == 3 && parts[1] < 100 && parts[2] < 100) { "viewfinder.version must be major.minor.patch, got $version" }
+    require(parts.size == 3 && parts[1] < 100 && parts[2] < 100) { "version.txt must hold major.minor.patch, got $version" }
     return parts[0] * 10_000 + parts[1] * 100 + parts[2]
 }
 
