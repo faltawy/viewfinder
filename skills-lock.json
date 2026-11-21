@@ -36,6 +36,13 @@
       "skillPath": "system/edge-to-edge/SKILL.md",
       "computedHash": "954c391ab845f97ce160c04c3944d6c6da3c7ad0385970353b314ee2a3aabea2"
     },
+    "emil-design-eng": {
+      "source": "emilkowalski/skills",
+      "commit": "64eb3deb9a5fbfa041faf783e0bc3fd635872e9c",
+      "sourceType": "github",
+      "skillPath": "skills/emil-design-eng/SKILL.md",
+      "computedHash": "e1b377ccde1d32743d1d3f7d8626629deb8055c9114d180c184697928cc66cc6"
+    },
     "jetpack-compose-performance": {
       "source": "android/skills",
       "commit": "c72942584fff970dac86ced78b367fce0c441e52",
@@ -49,6 +56,13 @@
       "sourceType": "github",
       "skillPath": "skills/kotlin-concurrency-and-flow/SKILL.md",
       "computedHash": "fc593d0bcfb35d873f5db70ca83870d17c3a8e6a7e6a417083470eb3a10973f8"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "commit": "f76d1653d7467fc11fb9d9d79295a421c92ab958",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "e521187cf7538619acb336c79ba3dc12f7b2670e6a8f03db59167b5f1c603906"
     }
   }
 }
