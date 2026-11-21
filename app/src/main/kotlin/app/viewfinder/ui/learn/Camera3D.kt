@@ -555,6 +555,8 @@ internal class Scene(
     val turn: Float,
     /** Controls drawn lit, and how strongly (a slow breath for ones still to visit). */
     val lit: Map<Control, Float>,
+    /** Degrees the mode dial sits turned from the mode the rig was built at, demo or not (0 = reads that mode). */
+    val dial: Float = 0f,
 )
 
 /**
@@ -601,11 +603,15 @@ internal class Painter(private val rig: Rig, typeface: Typeface, private val den
     fun hit(x: Float, y: Float): Control? = hulls.lastOrNull { (_, h) -> inside(h, x, y) }?.first
 
     private fun pose(s: Solid, scene: Scene): Pose? {
-        if (s.control == null || s.control != scene.selected) return null
-        return when (val m = s.move) {
+        val m = s.move
+        val dial = if (s.control == Control.ModeDial && m is Move.Turn) scene.dial else 0f
+        if (s.control == null || s.control != scene.selected) {
+            return if (dial != 0f && m is Move.Turn) Pose(rotation(m.axis, dial), m.pivot, V3.ZERO) else null
+        }
+        return when (m) {
             Move.Still -> null
             is Move.Press -> Pose(IDENTITY, V3.ZERO, m.dir * (-m.depth * scene.press))
-            is Move.Turn -> Pose(rotation(m.axis, m.degrees * scene.turn), m.pivot, V3.ZERO)
+            is Move.Turn -> Pose(rotation(m.axis, m.degrees * scene.turn + dial), m.pivot, V3.ZERO)
         }
     }
 

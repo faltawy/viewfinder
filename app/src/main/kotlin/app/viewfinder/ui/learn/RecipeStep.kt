@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -63,11 +64,15 @@ import app.viewfinder.ui.pressScale
 import app.viewfinder.ui.tabular
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+/** Lets the step's slide-in settle before the line glides, so the glide is seen. */
+private const val GLIDE_AFTER_MS = 350L
 
 /** A recipe: the result as a before/after photo, the steps that make it lighting the camera, then what to expect. */
 @Composable
-fun RecipeStepContent(step: Step.Recipe) {
+internal fun RecipeStepContent(step: Step.Recipe) {
     var active by rememberSaveable(step.title) { mutableIntStateOf(-1) }
     var visited by remember { mutableStateOf(emptySet<Control>()) }
     val controls = remember(step) { step.steps.mapNotNull { it.control }.distinct() }
@@ -90,11 +95,12 @@ fun RecipeStepContent(step: Step.Recipe) {
                 visited = visited,
                 selected = selected,
                 onSelect = { c ->
-                    // A part tapped on the figure picks the first step done with it; tapping away clears.
-                    active = if (c == null) -1 else step.steps.indexOfFirst { it.control == c }
+                    // A part tapped on the figure picks the first step done with it; tapping it again, or away, clears.
+                    active = if (c == null || c == selected) -1 else step.steps.indexOfFirst { it.control == c }
                     if (c != null) visited = visited + c
                 },
                 mode = step.mode ?: Mode.Auto,
+                cue = active,
             )
         }
     }
@@ -116,17 +122,22 @@ private fun Note(label: String, body: String, tint: Color) {
  * still scroll the page.
  */
 @Composable
-fun BeforeAfter(photo: String, before: @Composable BoxScope.() -> Unit, after: @Composable BoxScope.() -> Unit) {
+internal fun BeforeAfter(photo: String, before: @Composable BoxScope.() -> Unit, after: @Composable BoxScope.() -> Unit) {
     val motion = Motion.current
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     var split by rememberSaveable(photo) { mutableFloatStateOf(if (motion.reduced) 0.5f else 0.35f) }
     var glided by rememberSaveable(photo) { mutableStateOf(motion.reduced) }
     var glide by remember { mutableStateOf<Job?>(null) }
-    LaunchedEffect(photo) {
-        if (!glided) {
-            glided = true
-            glide = scope.launch { animate(split, 0.5f, animationSpec = motion.move()) { v, _ -> split = v } }
+    // The cue to drag plays once the photo is there to see and the step has slid in, never again after.
+    val loaded = rememberLearnPhoto(photo) != null
+    LaunchedEffect(loaded) {
+        if (loaded && !glided) {
+            glide = scope.launch {
+                delay(GLIDE_AFTER_MS)
+                glided = true
+                animate(split, 0.5f, animationSpec = motion.move()) { v, _ -> split = v }
+            }
         }
     }
 
@@ -134,7 +145,7 @@ fun BeforeAfter(photo: String, before: @Composable BoxScope.() -> Unit, after: @
         photo,
         Modifier
             .pointerInput(photo) {
-                detectHorizontalDragGestures(onDragStart = { glide?.cancel() }) { change, dx ->
+                detectHorizontalDragGestures(onDragStart = { glide?.cancel(); glided = true }) { change, dx ->
                     change.consume()
                     val was = split
                     split = (split + dx / size.width).coerceIn(0f, 1f)
@@ -160,7 +171,7 @@ fun BeforeAfter(photo: String, before: @Composable BoxScope.() -> Unit, after: @
             // The handle sits low, out of the way of the subject most photos put near the middle.
             val handle = Offset(x, size.height * 0.84f)
             drawCircle(Color.Black.copy(alpha = 0.55f), 16.dp.toPx(), handle)
-            drawCircle(Color.White.copy(alpha = 0.9f), 16.dp.toPx(), handle, style = androidx.compose.ui.graphics.drawscope.Stroke(1.5.dp.toPx()))
+            drawCircle(Color.White.copy(alpha = 0.9f), 16.dp.toPx(), handle, style = Stroke(1.5.dp.toPx()))
         }
         Badge("BEFORE", Modifier.align(Alignment.TopStart))
         Badge("AFTER · ≈ PREVIEW", Modifier.align(Alignment.TopEnd))

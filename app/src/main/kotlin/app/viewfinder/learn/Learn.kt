@@ -46,6 +46,16 @@ enum class Setting(val title: String) { Aperture("Aperture"), Shutter("Shutter")
 /** The modes in the order they sit around the dial, clockwise from the top as you look down on it. */
 val DIAL_ORDER = listOf(Mode.P, Mode.S, Mode.A, Mode.M, Mode.Effects, Mode.NoFlash, Mode.Auto, Mode.Scene)
 
+/**
+ * Clicks to turn the mode dial from [from] to [to] the shorter way round: positive goes forward through
+ * [DIAL_ORDER], negative back. Halfway round (four clicks) counts as forward.
+ */
+fun dialClicks(from: Mode, to: Mode): Int {
+    val n = DIAL_ORDER.size
+    val d = ((DIAL_ORDER.indexOf(to) - DIAL_ORDER.indexOf(from)) % n + n) % n
+    return if (d > n / 2) d - n else d
+}
+
 /** The real-photo playgrounds, each built on one bundled photo. */
 enum class Playground { Steady, Aperture, Shutter, Iso, Exposure, WhiteBalance, Thirds }
 

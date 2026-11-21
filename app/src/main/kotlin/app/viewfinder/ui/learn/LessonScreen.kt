@@ -51,6 +51,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,6 +81,8 @@ fun LessonScreen(lesson: Lesson, onClose: () -> Unit, onFinish: () -> Unit, onOp
     var index by rememberSaveable(lesson.id) { mutableIntStateOf(0) }
     var forward by remember { mutableStateOf(true) }
     val last = index == lesson.steps.lastIndex
+    // Each step keeps what you did on it (an answer, a line you dragged, a step you picked) when you go Back to it.
+    val saved = rememberSaveableStateHolder()
 
     Column(Modifier.fillMaxSize().background(Palette.Background).safeDrawingPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -108,6 +111,7 @@ fun LessonScreen(lesson: Lesson, onClose: () -> Unit, onFinish: () -> Unit, onOp
             label = "lesson-step",
             modifier = Modifier.weight(1f),
         ) { i ->
+            saved.SaveableStateProvider("${lesson.id}:$i") {
             Column(
                 Modifier
                     .fillMaxSize()
@@ -117,6 +121,7 @@ fun LessonScreen(lesson: Lesson, onClose: () -> Unit, onFinish: () -> Unit, onOp
             ) {
                 StepContent(lesson, lesson.steps[i], onOpenLesson)
                 Spacer(Modifier.height(12.dp))
+            }
             }
         }
 

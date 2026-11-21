@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.viewfinder.learn.Control
 import app.viewfinder.learn.Mode
+import app.viewfinder.learn.dialClicks
 import app.viewfinder.ui.Motion
 import app.viewfinder.ui.tabular
 import kotlin.math.abs
@@ -71,6 +72,7 @@ fun CameraBody(
     onSelect: (Control?) -> Unit,
     modifier: Modifier = Modifier,
     mode: Mode = Mode.Auto,
+    cue: Int = 0,
 ) {
     val motion = Motion.current
     val scope = rememberCoroutineScope()
@@ -86,19 +88,39 @@ fun CameraBody(
     val focusX = remember { Animatable(0.5f) }
     val focusY = remember { Animatable(0.5f) }
     val act = remember { Animatable(0f) }
+    // The dial starts on AUTO, as a new camera does; the first time it's shown it turns, click by click, to [mode].
+    val dialClicksToMode = remember(mode) { dialClicks(Mode.Auto, mode) }
+    val dialArrive = remember(mode) { Animatable(if (dialClicksToMode == 0) 1f else 0f) }
+    var shown by remember { mutableStateOf<Control?>(null) }
     var size by remember { mutableStateOf(IntSize.Zero) }
     var dragging by remember { mutableStateOf(false) }
 
     fun layout(w: Float, h: Float) = Triple(w / 2f, h * 0.5f, w / 250f)
 
-    // Choosing a control: let go of any close-up, turn to show it, glide in, then let it act.
-    LaunchedEffect(selected) {
+    /** Let [control] act out what it does; the mode dial's first showing turns it from AUTO to [mode] instead. */
+    suspend fun demonstrate(control: Control) {
+        if (control == Control.ModeDial && dialArrive.value < 1f) {
+            dialArrive.animateTo(1f, motion.demo())
+        } else {
+            act.animateTo(1f, motion.demo())
+        }
+    }
+
+    // Choosing a control: let go of any close-up, turn to show it, glide in, then let it act. A new [cue] on the
+    // control already shown (the next recipe step done with it) just acts again from where the view is.
+    LaunchedEffect(selected, cue) {
         act.snapTo(0f)
         val spot = selected?.let { spots[it] }
         if (spot == null) {
+            shown = null
             zoom.animateTo(1f, motion.move())
             return@LaunchedEffect
         }
+        if (selected == shown && zoom.value > 1.01f) {
+            demonstrate(selected)
+            return@LaunchedEffect
+        }
+        shown = selected
         if (zoom.value > 1.01f) zoom.animateTo(1f, motion.move())
         launch { yaw.animateTo(nearest(yaw.value, spot.yaw), motion.move()) }
         pitch.animateTo(spot.pitch, motion.move())
@@ -110,7 +132,7 @@ fun CameraBody(
             launch { focusY.animateTo((p.y / size.height).coerceIn(0.2f, 0.8f), motion.move()) }
         }
         zoom.animateTo(1.7f, motion.move())
-        act.animateTo(1f, motion.demo())
+        demonstrate(selected)
     }
 
     // An idle tour: at rest the turntable sways slowly side to side; still with reduced motion or while touched.
@@ -133,6 +155,7 @@ fun CameraBody(
     val readout = buildString {
         append("${angle}°")
         when {
+            selected == Control.ModeDial && dialClicksToMode != 0 && dialArrive.value < 1f -> append(" · auto → ${mode.mark.lowercase()}")
             selected != null -> append(" · ").append(stateOf(selected, act.value))
             highlighted.isNotEmpty() -> append(" · ${highlighted.count { it in visited }}/${highlighted.size} seen")
         }
@@ -197,7 +220,8 @@ fun CameraBody(
                 it.drawOval(floor.x - r, floor.y - r * sp + 4.dp.toPx(), floor.x + r, floor.y + r * sp + 8.dp.toPx(), this)
             }
             val lit = highlighted.associateWith { c -> if (c in visited) 0.35f else breath }
-            val scene = Scene(shownYaw, pitch.value, HERO_YAW, selected, pressCurve(act.value), thereAndBack(act.value), lit)
+            val dialOffset = -dialClicksToMode * 45f * (1f - detents(dialArrive.value, abs(dialClicksToMode)))
+            val scene = Scene(shownYaw, pitch.value, HERO_YAW, selected, pressCurve(act.value), thereAndBack(act.value), lit, dialOffset)
             drawIntoCanvas { painter.draw(it.nativeCanvas, cx, cy, s, scene) }
         }
         Text("Fig 1", style = Label.copy(color = Color(0xFFB9C2BA)), modifier = Modifier.align(Alignment.TopStart).padding(14.dp))
@@ -232,6 +256,15 @@ private fun nearest(current: Float, target: Float): Float {
     while (t - current > 180f) t -= 360f
     while (current - t > 180f) t += 360f
     return t
+}
+
+/** Progress 0..1 over [clicks] detents, each click eased in and settling, so a turn reads as distinct clicks. */
+private fun detents(t: Float, clicks: Int): Float {
+    if (clicks == 0) return 1f
+    val x = t.coerceIn(0f, 1f) * clicks
+    val k = kotlin.math.floor(x).coerceAtMost(clicks - 1f)
+    val f = (x - k).coerceIn(0f, 1f)
+    return (k + (1f - (1f - f) * (1f - f) * (1f - f))) / clicks
 }
 
 /** Two presses, the second deeper: a half-press, then all the way. */

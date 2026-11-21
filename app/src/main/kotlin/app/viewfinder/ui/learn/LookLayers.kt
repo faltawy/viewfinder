@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -32,7 +33,7 @@ import app.viewfinder.learn.whiteBalanceGains
  * explains it show the same thing.
  */
 @Composable
-fun LookLayer(look: Look, after: Boolean) {
+internal fun LookLayer(look: Look, after: Boolean) {
     when (look) {
         Look.SoftBackground -> ApertureLayers(apertureOpen(if (after) 2.8 else 16.0))
         Look.FreezeVsFlow -> TrafficLayers(if (after) 1 / 15f else 1 / 1000f)
@@ -145,7 +146,7 @@ half4 main(float2 p) {
 """
 
 @Composable
-private fun PopLayer(photo: androidx.compose.ui.graphics.ImageBitmap?, targetDeg: Float, widthDeg: Float) {
+private fun PopLayer(photo: ImageBitmap?, targetDeg: Float, widthDeg: Float) {
     if (photo == null) return
     val shader = remember { RuntimeShader(POP_SHADER) }
     Image(

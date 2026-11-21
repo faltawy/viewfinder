@@ -3,6 +3,7 @@ package app.viewfinder
 import app.viewfinder.learn.Control
 import app.viewfinder.learn.Learn
 import app.viewfinder.learn.Mode
+import app.viewfinder.learn.dialClicks
 import app.viewfinder.learn.Look
 import app.viewfinder.learn.Step
 import app.viewfinder.learn.nextLesson
@@ -94,5 +95,15 @@ class LearnContentTest {
         val menu = recipes.filter { r -> r.steps.any { it.control == Control.Menu || it.control == Control.IButton } }
         assertTrue(menu.size >= 3)
         for (r in menu) assertTrue("${r.title} needs P, S, A or M", r.mode in setOf(Mode.P, Mode.S, Mode.A, Mode.M))
+    }
+
+    @Test
+    fun `turning the mode dial takes the shorter way round`() {
+        assertEquals(0, dialClicks(Mode.Auto, Mode.Auto))
+        assertEquals(1, dialClicks(Mode.Auto, Mode.Scene))
+        assertEquals(2, dialClicks(Mode.Auto, Mode.P))
+        assertEquals(-2, dialClicks(Mode.Auto, Mode.Effects))
+        assertEquals(4, dialClicks(Mode.Auto, Mode.A))   // halfway round: either way is four clicks
+        assertEquals(-1, dialClicks(Mode.A, Mode.S))
     }
 }
